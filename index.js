@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer-extra')
 const bodyParser = require('body-parser')
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker')
+var validUrl = require('valid-url');
 
 puppeteer.use(StealthPlugin())
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
@@ -15,13 +16,18 @@ const port = 3000
 app.get('/',async (req, res) => {
     try {
         const {url}  = req.query
-        console.log(url)
+        if(typeof url == 'underfined' || url == null || url == ""){
+            return res.json({"message":"url invalid."})
+        }
+        if (!validUrl.isUri(url)){
+            return res.json({"message":"url invalid."})
+        }
         const cookies = await getCookie(url)
         let cookie = ""
         cookies.forEach(value => {
             cookie += value.name+"="+value.value+"; "
         });
-        console.log(cookie)
+        console.log("url: " + url + " , cookie: " + cookie)
         return res.json({"cookie":cookie})
     } catch (e) {
         return res.json({"message":e})
